@@ -1,6 +1,5 @@
 # Proyecto-BDI-Equipo-40
 Sistema Gestor de Reservas, Estadías y Consumos de un Hotel
-Introducción
 
 Este proyecto consiste en el diseño de una base de datos para gestionar las principales operaciones de un hotel con restaurante integrado. El sistema permite administrar la información relacionada con los hoteles, habitaciones, tipos de habitación, clientes, reservas, consumos del restaurante, productos, pagos y servicios de mantenimiento.
 
