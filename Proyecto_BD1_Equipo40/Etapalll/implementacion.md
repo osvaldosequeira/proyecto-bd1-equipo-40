@@ -52,6 +52,29 @@ CREATE TABLE producto (
     stock INT NOT NULL CHECK (stock >= 0)
 );
 
+CREATE TABLE mantenimiento (
+    id_mantenimiento INT IDENTITY(1,1) PRIMARY KEY,
+    fecha_hora DATETIME DEFAULT GETDATE(),
+    categoria VARCHAR(20) NOT NULL CHECK (categoria IN ('limpieza', 'reparacion')),
+    tipo_reparacion VARCHAR(100),
+    id_habitacion INT NOT NULL,
+    CONSTRAINT fk_mantenimiento_habitacion FOREIGN KEY (id_habitacion) REFERENCES habitacion(id_habitacion) ON DELETE NO ACTION ON UPDATE CASCADE
+);
+
+CREATE TABLE pago (
+    id_pago INT IDENTITY(1,1) PRIMARY KEY,
+    fecha DATE DEFAULT CAST(GETDATE() AS DATE),
+    monto DECIMAL(10, 2) NOT NULL CHECK (monto > 0),
+    medio_pago VARCHAR(50) NOT NULL,
+    id_reserva INT,
+    id_consumo INT,
+    CONSTRAINT ck_origen_pago CHECK ((id_reserva IS NOT NULL AND id_consumo IS NULL) OR (id_reserva IS NULL AND id_consumo IS NOT NULL)),
+    CONSTRAINT fk_pago_reserva FOREIGN KEY (id_reserva) REFERENCES reserva(id_reserva) ON DELETE NO ACTION ON UPDATE NO ACTION,
+    CONSTRAINT fk_pago_consumo FOREIGN KEY (id_consumo) REFERENCES consumo(id_consumo) ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+
+
 2. SCRIPT DML
 
 INSERT INTO tipo_habitacion (nombre_tipo, descripcion, capacidad_maxima, precio_por_noche) VALUES
@@ -99,3 +122,27 @@ INSERT INTO cliente_telefono (telefono, nro_dni) VALUES
 ('3794-667788', '35888999');
 ('HAB-402', 'libre', 8),
 ('HAB-501', 'libre', 6);
+
+INSERT INTO mantenimiento (fecha_hora, categoria, tipo_reparacion, id_habitacion) VALUES
+('2026-09-09 10:00:00', 'limpieza', NULL, 1),
+('2026-09-14 11:30:00', 'reparacion', 'Cambio de cuerito de canilla del bano', 2),
+('2026-09-19 15:00:00', 'reparacion', 'Reparacion de tomacorriente defectuoso', 5),
+('2026-09-21 09:00:00', 'limpieza', NULL, 6),
+('2026-09-22 14:20:00', 'reparacion', 'Carga de gas refrigerante en aire acondicionado', 7),
+('2026-09-30 08:30:00', 'limpieza', NULL, 8),
+('2026-10-07 16:00:00', 'reparacion', 'Pintura de pared por humedad resuelta', 3),
+('2026-10-11 10:15:00', 'limpieza', NULL, 10),
+('2026-10-17 12:00:00', 'limpieza', NULL, 4),
+('2026-10-31 17:00:00', 'reparacion', 'Ajuste de cerradura electronica', 9);
+
+INSERT INTO pago (fecha, monto, medio_pago, id_reserva, id_consumo) VALUES
+('2026-09-01', 45000.00, 'Tarjeta de Credito', 1, NULL),
+('2026-09-02', 75000.00, 'Transferencia', 2, NULL),
+('2026-09-03', 150000.00, 'Tarjeta de Debito', 3, NULL),
+('2026-09-11', 21000.00, 'Efectivo', NULL, 1),
+('2026-09-11', 13000.00, 'Efectivo', NULL, 2),
+('2026-09-16', 52400.00, 'Tarjeta de Debito', NULL, 3),
+('2026-09-20', 325000.00, 'Transferencia', 3, NULL),
+('2026-09-22', 260000.00, 'Tarjeta de Credito', 4, NULL),
+('2026-10-02', 23600.00, 'Efectivo', NULL, 6),
+('2026-10-12', 630000.00, 'Transferencia', 7, NULL);
