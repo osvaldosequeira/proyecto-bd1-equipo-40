@@ -15,6 +15,15 @@ CREATE TABLE habitacion (
     id_tipo_habitacion INT NOT NULL,
     CONSTRAINT fk_habitacion_tipo FOREIGN KEY (id_tipo_habitacion) REFERENCES tipo_habitacion(id_tipo_habitacion) ON DELETE NO ACTION ON UPDATE CASCADE
 );
+CREATE TABLE detalle_consumo (
+    id_detalle INT IDENTITY(1,1) PRIMARY KEY,
+    id_consumo INT NOT NULL,
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    precio_unitario_historico DECIMAL(10, 2) NOT NULL CHECK (precio_unitario_historico >= 0),
+    CONSTRAINT fk_detalle_consumo FOREIGN KEY (id_consumo) REFERENCES consumo(id_consumo) ON DELETE NO ACTION ON UPDATE CASCADE,
+    CONSTRAINT fk_detalle_producto FOREIGN KEY (id_producto) REFERENCES producto(id_producto) ON DELETE NO ACTION ON UPDATE CASCADE
+);
 
 CREATE TABLE cliente (
     id_cliente INT IDENTITY(1,1) PRIMARY KEY,
@@ -96,6 +105,19 @@ INSERT INTO habitacion (codigo_habitacion, estado, id_tipo_habitacion) VALUES
 ('HAB-301', 'libre', 5),
 ('HAB-302', 'en mantenimiento', 6),
 ('HAB-401', 'ocupada', 7),
+INSERT INTO detalle_consumo (id_consumo, id_producto, cantidad, precio_unitario_historico) VALUES
+(1, 1, 1, 18500.00),
+(1, 5, 1, 2500.00),
+(2, 4, 3, 2200.00),
+(2, 6, 2, 3200.00),
+(3, 2, 2, 14200.00),
+(3, 7, 1, 24000.00),
+(4, 1, 3, 18500.00),
+(4, 8, 3, 5500.00),
+(5, 9, 2, 3800.00),
+(6, 3, 2, 11800.00),
+(7, 2, 1, 14200.00),
+(8, 7, 2, 24000.00);
 
 INSERT INTO cliente (dni, nombre, apellido) VALUES
 ('44466386', 'Lourdes', 'Aranda'),
