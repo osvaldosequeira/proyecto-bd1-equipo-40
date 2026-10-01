@@ -73,5 +73,29 @@ INSERT INTO habitacion (codigo_habitacion, estado, id_tipo_habitacion) VALUES
 ('HAB-301', 'libre', 5),
 ('HAB-302', 'en mantenimiento', 6),
 ('HAB-401', 'ocupada', 7),
+
+INSERT INTO cliente (dni, nombre, apellido) VALUES
+('44466386', 'Lourdes', 'Aranda'),
+('45939727', 'Valentina Belen', 'Gomez'),
+('36675735', 'Veronica Stefania', 'Gomez Varela'),
+('44543730', 'Natalia Magali', 'Lezcano'),
+('45644904', 'Osvaldo Nolberto', 'Sequeira'),
+('38123456', 'Juan Carlos', 'Perez'),
+('40987654', 'Maria Elena', 'Gomez'),
+('42111222', 'Pedro', 'Lopez'),
+('35888999', 'Ana', 'Martinez'),
+('33444555', 'Roberto', 'Diaz');
+
+INSERT INTO cliente_telefono (telefono, nro_dni) VALUES
+('3794-112233', '44466386'),
+('3794-998877', '44466386'),
+('3624-445566', '45939727'),
+('3794-776655', '36675735'),
+('3777-123456', '44543730'),
+('3794-554433', '38123456'),
+('3624-889900', '40987654'),
+('3777-654321', '42111222'),
+('3794-223344', '35888999'),
+('3794-667788', '35888999');
 ('HAB-402', 'libre', 8),
 ('HAB-501', 'libre', 6);
