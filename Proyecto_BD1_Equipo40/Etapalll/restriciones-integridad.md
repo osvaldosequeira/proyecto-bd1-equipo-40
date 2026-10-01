@@ -14,3 +14,16 @@ cliente.dni: Impide registrar dos huéspedes con el mismo número de documento.
 producto.codigo_producto: Garantiza identificadores unívocos para cada artículo del menú. 
 
 Las restricciones de dominio y no nulidad (NOT NULL y CHECK simples) definen el conjunto de valores válidos permitidos para cada atributo, asegurando la calidad de los datos ingresados al sistema. Las cláusulas NOT NULL resultan obligatorias en atributos indispensables como nombres, fechas, montos y descripciones para evitar celdas vacías. Por su parte, las validaciones numéricas de rango mediante cláusulas CHECK establecen que capacidad_maxima > 0 y precio_por_noche > 0 en tipo_habitacion, cantidad_personas > 0 en reserva, precio_unitario >= 0 y stock >= 0 en producto, cantidad > 0 y precio_unitario_historico >= 0 en detalle_consumo, y monto > 0 en pago. Además, la validación de fechas asegura que fecha_salida > fecha_entrada en la tabla reserva, mientras que el mapeo de dominios discretos restringe los valores permitidos con listas como estado IN ('libre', 'ocupada', 'en mantenimiento') en habitacion y categoria IN ('limpieza', 'reparacion') en mantenimiento.
+
+Restricciones Semánticas de Negocio (Reglas Complejas). Son reglas condicionales diseñadas específicamente para cumplir con la lógica operativa del hotel:
+Exclusividad del Pago (RN.11): ck_origen_pago CHECK ((id_reserva IS NOT NULL AND id_consumo IS NULL) OR (id_reserva IS NULL AND id_consumo IS NOT NULL)).
+Garantiza que cada transacción en la tabla pago salde únicamente una reserva o un consumo, de forma mutuamente excluyente.
+Condicionalidad de Mantenimiento (RN.22): Exige especificar el atributo tipo_reparacion cuando la categoría del servicio sea 'reparación';
+Inmutabilidad del Precio Histórico (RN.10 / RN.24): Almacenamiento de precio_unitario_historico en detalle_consumo para congelar el valor facturado frente a aumentos futuros de la carta.
+
+
+
+
+
+
+
