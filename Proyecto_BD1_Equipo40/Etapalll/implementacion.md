@@ -52,3 +52,26 @@ CREATE TABLE producto (
     stock INT NOT NULL CHECK (stock >= 0)
 );
 
+2. SCRIPT DML
+
+INSERT INTO tipo_habitacion (nombre_tipo, descripcion, capacidad_maxima, precio_por_noche) VALUES
+('Simple Standard', 'Habitacion individual con cama simple y bano privado', 1, 45000.00),
+('Doble Matrimonial', 'Habitacion con cama sommier matrimonial', 2, 75000.00),
+('Doble Twin', 'Habitacion con dos camas individuales', 2, 70000.00),
+('Triple Familiar', 'Habitacion con tres camas individuales', 3, 95000.00),
+('Suite Junior', 'Suite con zona de estar y cama King Size', 2, 130000.00),
+('Suite Presidencial', 'Suite de lujo con hidromasaje y vista panoramica', 4, 210000.00),
+('Super Executive', 'Habitacion ejecutiva con escritorio de trabajo', 3, 160000.00),
+('Doble Superior', 'Habitacion doble amplia con balcon al jardin', 2, 85000.00);
+
+INSERT INTO habitacion (codigo_habitacion, estado, id_tipo_habitacion) VALUES
+('HAB-101', 'libre', 1),
+('HAB-102', 'ocupada', 2),
+('HAB-103', 'libre', 3),
+('HAB-201', 'libre', 2),
+('HAB-202', 'ocupada', 4),
+('HAB-301', 'libre', 5),
+('HAB-302', 'en mantenimiento', 6),
+('HAB-401', 'ocupada', 7),
+('HAB-402', 'libre', 8),
+('HAB-501', 'libre', 6);
