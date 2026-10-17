@@ -40,17 +40,16 @@ CREATE TABLE cliente_telefono (
 );
 
 CREATE TABLE reserva (
-    id_reserva INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    fecha_reserva DATE DEFAULT CURRENT_DATE,
+    id_reserva INT IDENTITY(1,1) PRIMARY KEY,
+    fecha_reserva DATE DEFAULT GETDATE(),
     fecha_entrada DATE NOT NULL,
     fecha_salida DATE NOT NULL,
     cantidad_personas INT NOT NULL CHECK (cantidad_personas > 0),
     id_cliente INT NOT NULL,
     id_habitacion INT NOT NULL,
-
     CONSTRAINT ck_fechas_reserva CHECK (fecha_salida > fecha_entrada),
-    CONSTRAINT fk_reserva_cliente FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT fk_reserva_habitacion FOREIGN KEY (id_habitacion) REFERENCES habitacion(id_habitacion) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT fk_reserva_cliente FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente) ON DELETE NO ACTION ON UPDATE CASCADE,
+    CONSTRAINT fk_reserva_habitacion FOREIGN KEY (id_habitacion) REFERENCES habitacion(id_habitacion) ON DELETE NO ACTION ON UPDATE CASCADE
 );
 
 CREATE TABLE producto (
