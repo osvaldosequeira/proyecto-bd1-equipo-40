@@ -15,15 +15,6 @@ CREATE TABLE habitacion (
     id_tipo_habitacion INT NOT NULL,
     CONSTRAINT fk_habitacion_tipo FOREIGN KEY (id_tipo_habitacion) REFERENCES tipo_habitacion(id_tipo_habitacion) ON DELETE NO ACTION ON UPDATE CASCADE
 );
-CREATE TABLE detalle_consumo (
-    id_detalle INT IDENTITY(1,1) PRIMARY KEY,
-    id_consumo INT NOT NULL,
-    id_producto INT NOT NULL,
-    cantidad INT NOT NULL CHECK (cantidad > 0),
-    precio_unitario_historico DECIMAL(10, 2) NOT NULL CHECK (precio_unitario_historico >= 0),
-    CONSTRAINT fk_detalle_consumo FOREIGN KEY (id_consumo) REFERENCES consumo(id_consumo) ON DELETE NO ACTION ON UPDATE CASCADE,
-    CONSTRAINT fk_detalle_producto FOREIGN KEY (id_producto) REFERENCES producto(id_producto) ON DELETE NO ACTION ON UPDATE CASCADE
-);
 
 CREATE TABLE cliente (
     id_cliente INT IDENTITY(1,1) PRIMARY KEY,
@@ -41,13 +32,17 @@ CREATE TABLE cliente_telefono (
 
 CREATE TABLE reserva (
     id_reserva INT IDENTITY(1,1) PRIMARY KEY,
-    fecha_reserva DATE DEFAULT GETDATE(),
+    fecha_reserva DATE NOT NULL DEFAULT GETDATE(),
     fecha_entrada DATE NOT NULL,
+    horario_entrada TIME NOT NULL,
     fecha_salida DATE NOT NULL,
+    horario_salida TIME NOT NULL,
     cantidad_personas INT NOT NULL CHECK (cantidad_personas > 0),
     id_cliente INT NOT NULL,
     id_habitacion INT NOT NULL,
-    CONSTRAINT ck_fechas_reserva CHECK (fecha_salida > fecha_entrada),
+    CONSTRAINT ck_fechas_reserva CHECK (fecha_salida > fecha_entrada
+            OR (fecha_salida = fecha_entrada
+            AND horario_salida > horario_entrada)),
     CONSTRAINT fk_reserva_cliente FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente) ON DELETE NO ACTION ON UPDATE CASCADE,
     CONSTRAINT fk_reserva_habitacion FOREIGN KEY (id_habitacion) REFERENCES habitacion(id_habitacion) ON DELETE NO ACTION ON UPDATE CASCADE
 );
@@ -60,22 +55,56 @@ CREATE TABLE producto (
     stock INT NOT NULL CHECK (stock >= 0)
 );
 
+CREATE TABLE consumo (
+    id_consumo INT IDENTITY(1,1) PRIMARY KEY,
+    fecha_hora DATETIME NOT NULL DEFAULT GETDATE(),
+    descripcion VARCHAR(200) NOT NULL,
+    id_cliente INT NOT NULL,
+
+    CONSTRAINT fk_consumo_cliente
+        FOREIGN KEY (id_cliente)
+        REFERENCES cliente(id_cliente)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE detalle_consumo (
+    id_detalle INT IDENTITY(1,1) PRIMARY KEY,
+    id_consumo INT NOT NULL,
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    precio_unitario_historico DECIMAL(10, 2) NOT NULL CHECK (precio_unitario_historico >= 0),
+    CONSTRAINT fk_detalle_consumo FOREIGN KEY (id_consumo) REFERENCES consumo(id_consumo) ON DELETE NO ACTION ON UPDATE CASCADE,
+    CONSTRAINT fk_detalle_producto FOREIGN KEY (id_producto) REFERENCES producto(id_producto) ON DELETE NO ACTION ON UPDATE CASCADE
+);
+
+
 CREATE TABLE mantenimiento (
     id_mantenimiento INT IDENTITY(1,1) PRIMARY KEY,
-    fecha_hora DATETIME DEFAULT GETDATE(),
+    fecha_hora DATETIME NOT NULL DEFAULT GETDATE(),
     categoria VARCHAR(20) NOT NULL CHECK (categoria IN ('limpieza', 'reparacion')),
     tipo_reparacion VARCHAR(100),
     id_habitacion INT NOT NULL,
-    CONSTRAINT fk_mantenimiento_habitacion FOREIGN KEY (id_habitacion) REFERENCES habitacion(id_habitacion) ON DELETE NO ACTION ON UPDATE CASCADE
+   CONSTRAINT ck_tipo_reparacion
+        CHECK (
+            (categoria = 'limpieza' AND tipo_reparacion IS NULL)
+            OR
+            (categoria = 'reparacion' AND tipo_reparacion IS NOT NULL)),
+    CONSTRAINT fk_mantenimiento_habitacion
+        FOREIGN KEY (id_habitacion)
+        REFERENCES habitacion(id_habitacion)
+        ON DELETE NO ACTION
+        ON UPDATE CASCADE
 );
+
 
 CREATE TABLE pago (
     id_pago INT IDENTITY(1,1) PRIMARY KEY,
-    fecha DATE DEFAULT CAST(GETDATE() AS DATE),
+    fecha DATE NOT NULL DEFAULT CAST(GETDATE() AS DATE),
     monto DECIMAL(10, 2) NOT NULL CHECK (monto > 0),
     medio_pago VARCHAR(50) NOT NULL,
-    id_reserva INT,
-    id_consumo INT,
+    id_reserva INT NULL,
+    id_consumo INT NULL,
     CONSTRAINT ck_origen_pago CHECK ((id_reserva IS NOT NULL AND id_consumo IS NULL) OR (id_reserva IS NULL AND id_consumo IS NOT NULL)),
     CONSTRAINT fk_pago_reserva FOREIGN KEY (id_reserva) REFERENCES reserva(id_reserva) ON DELETE NO ACTION ON UPDATE NO ACTION,
     CONSTRAINT fk_pago_consumo FOREIGN KEY (id_consumo) REFERENCES consumo(id_consumo) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -83,18 +112,22 @@ CREATE TABLE pago (
 
 
 
-2. SCRIPT DML
+2. SCRIPT DML: POBLADO INICIAL DE LA BASE DE DATOS
+-- Motor: SQL Server / T-SQL
+-- ============================================================================
 
+-- 1. TIPO_HABITACION (8 registros)
 INSERT INTO tipo_habitacion (nombre_tipo, descripcion, capacidad_maxima, precio_por_noche) VALUES
-('Simple Standard', 'Habitacion individual con cama simple y bano privado', 1, 45000.00),
-('Doble Matrimonial', 'Habitacion con cama sommier matrimonial', 2, 75000.00),
-('Doble Twin', 'Habitacion con dos camas individuales', 2, 70000.00),
-('Triple Familiar', 'Habitacion con tres camas individuales', 3, 95000.00),
+('Simple Standard', 'Habitación individual con cama simple y baño privado', 1, 45000.00),
+('Doble Matrimonial', 'Habitación con cama sommier matrimonial', 2, 75000.00),
+('Doble Twin', 'Habitación con dos camas individuales', 2, 70000.00),
+('Triple Familiar', 'Habitación con tres camas individuales', 3, 95000.00),
 ('Suite Junior', 'Suite con zona de estar y cama King Size', 2, 130000.00),
-('Suite Presidencial', 'Suite de lujo con hidromasaje y vista panoramica', 4, 210000.00),
-('Super Executive', 'Habitacion ejecutiva con escritorio de trabajo', 3, 160000.00),
-('Doble Superior', 'Habitacion doble amplia con balcon al jardin', 2, 85000.00);
+('Suite Presidencial', 'Suite de lujo con hidromasaje y vista panorámica', 4, 210000.00),
+('Super Executive', 'Habitación ejecutiva con escritorio de trabajo', 3, 160000.00),
+('Doble Superior', 'Habitación doble amplia con balcón al jardín', 2, 85000.00);
 
+-- 2. HABITACION (10 registros)
 INSERT INTO habitacion (codigo_habitacion, estado, id_tipo_habitacion) VALUES
 ('HAB-101', 'libre', 1),
 ('HAB-102', 'ocupada', 2),
@@ -104,6 +137,75 @@ INSERT INTO habitacion (codigo_habitacion, estado, id_tipo_habitacion) VALUES
 ('HAB-301', 'libre', 5),
 ('HAB-302', 'en mantenimiento', 6),
 ('HAB-401', 'ocupada', 7),
+('HAB-402', 'libre', 8),
+('HAB-501', 'libre', 6);
+
+-- 3. CLIENTE (10 registros)
+INSERT INTO cliente (dni, nombre, apellido) VALUES
+('44466386', 'Lourdes', 'Aranda'),
+('45939727', 'Valentina Belen', 'Gomez'),
+('36675735', 'Veronica Stefania', 'Gomez Varela'),
+('44543730', 'Natalia Magali', 'Lezcano'),
+('45644904', 'Osvaldo Nolberto', 'Sequeira'),
+('38123456', 'Juan Carlos', 'Perez'),
+('40987654', 'Maria Elena', 'Gomez'),
+('42111222', 'Pedro', 'Lopez'),
+('35888999', 'Ana', 'Martinez'),
+('33444555', 'Roberto', 'Diaz');
+
+-- 4. CLIENTE_TELEFONO (10 registros)
+INSERT INTO cliente_telefono (telefono, nro_dni) VALUES
+('3794-112233', '44466386'),
+('3794-998877', '44466386'),
+('3624-445566', '45939727'),
+('3794-776655', '36675735'),
+('3777-123456', '44543730'),
+('3794-554433', '38123456'),
+('3624-889900', '40987654'),
+('3777-654321', '42111222'),
+('3794-223344', '35888999'),
+('3794-667788', '35888999');
+
+-- 5. RESERVA (10 registros con horarios y capacidad coherente)
+INSERT INTO reserva (fecha_reserva, fecha_entrada, horario_entrada, fecha_salida, horario_salida, cantidad_personas, id_cliente, id_habitacion) VALUES
+('2026-09-01', '2026-09-10', '14:00:00', '2026-09-13', '10:00:00', 1, 1, 1),
+('2026-09-02', '2026-09-15', '14:00:00', '2026-09-18', '10:00:00', 2, 2, 2),
+('2026-09-03', '2026-09-20', '15:00:00', '2026-09-25', '11:00:00', 3, 3, 5),
+('2026-09-04', '2026-09-22', '14:00:00', '2026-09-24', '10:00:00', 2, 4, 6),
+('2026-09-05', '2026-10-01', '16:00:00', '2026-10-05', '10:00:00', 3, 6, 8),
+('2026-09-06', '2026-10-08', '14:00:00', '2026-10-10', '10:00:00', 2, 7, 3),
+('2026-09-07', '2026-10-12', '15:00:00', '2026-10-15', '11:00:00', 4, 8, 10),
+('2026-09-08', '2026-10-18', '14:00:00', '2026-10-20', '10:00:00', 2, 9, 4),
+('2026-09-09', '2026-11-01', '14:00:00', '2026-11-04', '10:00:00', 2, 1, 9),
+('2026-09-10', '2026-11-10', '14:00:00', '2026-11-12', '10:00:00', 2, 2, 6);
+
+-- 6. PRODUCTO (10 registros)
+INSERT INTO producto (codigo_producto, descripcion, precio_unitario, stock) VALUES
+('PROD-501', 'Bife de Chorizo con Papas Fritas', 18500.00, 45),
+('PROD-502', 'Ravioles de Ricota y Nuez con Salsa Fileto', 14200.00, 30),
+('PROD-503', 'Ensalada Caesar con Pollo', 11800.00, 25),
+('PROD-504', 'Empanada de Carne Cortada a Cuchillo', 2200.00, 120),
+('PROD-505', 'Agua Mineral Sin Gas 500ml', 2500.00, 200),
+('PROD-506', 'Gaseosa Cola 354ml', 3200.00, 150),
+('PROD-507', 'Vino Malbec Reserva 750ml', 24000.00, 40),
+('PROD-508', 'Flan Casero con Dulce de Leche', 5500.00, 35),
+('PROD-509', 'Café Espresso Doble', 3800.00, 100),
+('PROD-510', 'Tarta de Manzana con Helado', 6800.00, 20);
+
+-- 7. CONSUMO (10 registros)
+INSERT INTO consumo (fecha_hora, descripcion, id_cliente) VALUES
+('2026-09-11 13:15:00', 'Almuerzo Restaurante Principal', 1),
+('2026-09-11 21:30:00', 'Cena Servicio a la Habitación 101', 1),
+('2026-09-16 14:00:00', 'Almuerzo Ejecutivo', 2),
+('2026-09-21 22:00:00', 'Cena Familiar Restaurante', 3),
+('2026-09-23 11:30:00', 'Cafetería Bar', 4),
+('2026-10-02 21:00:00', 'Cena de Bienvenida', 6),
+('2026-10-09 13:45:00', 'Almuerzo Dúo', 7),
+('2026-10-13 22:15:00', 'Cena VIP Suite Presidencial', 8),
+('2026-10-19 12:30:00', 'Almuerzo de Trabajo', 9),
+('2026-11-02 20:45:00', 'Cena Noche 1', 1);
+
+-- 8. DETALLE_CONSUMO (12 registros)
 INSERT INTO detalle_consumo (id_consumo, id_producto, cantidad, precio_unitario_historico) VALUES
 (1, 1, 1, 18500.00),
 (1, 5, 1, 2500.00),
@@ -118,52 +220,28 @@ INSERT INTO detalle_consumo (id_consumo, id_producto, cantidad, precio_unitario_
 (7, 2, 1, 14200.00),
 (8, 7, 2, 24000.00);
 
-INSERT INTO cliente (dni, nombre, apellido) VALUES
-('44466386', 'Lourdes', 'Aranda'),
-('45939727', 'Valentina Belen', 'Gomez'),
-('36675735', 'Veronica Stefania', 'Gomez Varela'),
-('44543730', 'Natalia Magali', 'Lezcano'),
-('45644904', 'Osvaldo Nolberto', 'Sequeira'),
-('38123456', 'Juan Carlos', 'Perez'),
-('40987654', 'Maria Elena', 'Gomez'),
-('42111222', 'Pedro', 'Lopez'),
-('35888999', 'Ana', 'Martinez'),
-('33444555', 'Roberto', 'Diaz');
-
-INSERT INTO cliente_telefono (telefono, nro_dni) VALUES
-('3794-112233', '44466386'),
-('3794-998877', '44466386'),
-('3624-445566', '45939727'),
-('3794-776655', '36675735'),
-('3777-123456', '44543730'),
-('3794-554433', '38123456'),
-('3624-889900', '40987654'),
-('3777-654321', '42111222'),
-('3794-223344', '35888999'),
-('3794-667788', '35888999');
-('HAB-402', 'libre', 8),
-('HAB-501', 'libre', 6);
-
+-- 9. MANTENIMIENTO (10 registros con validación estricta de ck_tipo_reparacion)
 INSERT INTO mantenimiento (fecha_hora, categoria, tipo_reparacion, id_habitacion) VALUES
 ('2026-09-09 10:00:00', 'limpieza', NULL, 1),
-('2026-09-14 11:30:00', 'reparacion', 'Cambio de cuerito de canilla del bano', 2),
-('2026-09-19 15:00:00', 'reparacion', 'Reparacion de tomacorriente defectuoso', 5),
+('2026-09-14 11:30:00', 'reparacion', 'Cambio de cuerito de canilla del baño', 2),
+('2026-09-19 15:00:00', 'reparacion', 'Reparación de tomacorriente defectuoso', 5),
 ('2026-09-21 09:00:00', 'limpieza', NULL, 6),
 ('2026-09-22 14:20:00', 'reparacion', 'Carga de gas refrigerante en aire acondicionado', 7),
 ('2026-09-30 08:30:00', 'limpieza', NULL, 8),
 ('2026-10-07 16:00:00', 'reparacion', 'Pintura de pared por humedad resuelta', 3),
 ('2026-10-11 10:15:00', 'limpieza', NULL, 10),
 ('2026-10-17 12:00:00', 'limpieza', NULL, 4),
-('2026-10-31 17:00:00', 'reparacion', 'Ajuste de cerradura electronica', 9);
+('2026-10-31 17:00:00', 'reparacion', 'Ajuste de cerradura electrónica', 9);
 
+-- 10. PAGO (10 registros con cumplimiento estricto de exclusividad ck_origen_pago)
 INSERT INTO pago (fecha, monto, medio_pago, id_reserva, id_consumo) VALUES
-('2026-09-01', 45000.00, 'Tarjeta de Credito', 1, NULL),
+('2026-09-01', 45000.00, 'Tarjeta de Crédito', 1, NULL),
 ('2026-09-02', 75000.00, 'Transferencia', 2, NULL),
-('2026-09-03', 150000.00, 'Tarjeta de Debito', 3, NULL),
+('2026-09-03', 150000.00, 'Tarjeta de Débito', 3, NULL),
 ('2026-09-11', 21000.00, 'Efectivo', NULL, 1),
 ('2026-09-11', 13000.00, 'Efectivo', NULL, 2),
-('2026-09-16', 52400.00, 'Tarjeta de Debito', NULL, 3),
+('2026-09-16', 52400.00, 'Tarjeta de Débito', NULL, 3),
 ('2026-09-20', 325000.00, 'Transferencia', 3, NULL),
-('2026-09-22', 260000.00, 'Tarjeta de Credito', 4, NULL),
+('2026-09-22', 260000.00, 'Tarjeta de Crédito', 4, NULL),
 ('2026-10-02', 23600.00, 'Efectivo', NULL, 6),
 ('2026-10-12', 630000.00, 'Transferencia', 7, NULL);
