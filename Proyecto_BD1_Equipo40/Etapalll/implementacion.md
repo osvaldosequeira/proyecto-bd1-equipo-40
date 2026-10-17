@@ -53,9 +53,8 @@ CREATE TABLE reserva (
     CONSTRAINT fk_reserva_habitacion FOREIGN KEY (id_habitacion) REFERENCES habitacion(id_habitacion) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
-
 CREATE TABLE producto (
-    id_producto INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_producto INT IDENTITY(1,1) PRIMARY KEY,
     codigo_producto VARCHAR(20) NOT NULL UNIQUE,
     descripcion VARCHAR(150) NOT NULL,
     precio_unitario DECIMAL(10, 2) NOT NULL CHECK (precio_unitario >= 0),
