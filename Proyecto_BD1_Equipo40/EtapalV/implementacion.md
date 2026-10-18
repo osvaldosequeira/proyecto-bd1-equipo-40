@@ -42,6 +42,7 @@ WHERE c.fecha_hora >= @FechaDesde
 GROUP BY p.codigo_producto, p.descripcion
 ORDER BY Total_Vendido DESC;
 
+SELECT
 ROUND(AVG(totales.monto_total), 2) AS Promedio_Gasto_Por_Consumo,
     MAX(totales.monto_total) AS Consumo_Maximo,
     MIN(totales.monto_total) AS Consumo_Minimo
