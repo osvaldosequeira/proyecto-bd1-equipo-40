@@ -54,3 +54,16 @@ FROM (
     INNER JOIN detalle_consumo dc ON c.id_consumo = dc.id_consumo
     GROUP BY c.id_consumo
 ) AS totales;
+
+SELECT 
+    cl.id_cliente,
+    cl.dni,
+    cl.nombre,
+    cl.apellido
+FROM cliente cl
+WHERE EXISTS (
+    SELECT 1 
+    FROM consumo c 
+    WHERE c.id_cliente = cl.id_cliente
+)
+ORDER BY cl.apellido, cl.nombre;
