@@ -41,3 +41,15 @@ WHERE c.fecha_hora >= @FechaDesde
   AND c.fecha_hora < DATEADD(DAY, 1, @FechaHasta)
 GROUP BY p.codigo_producto, p.descripcion
 ORDER BY Total_Vendido DESC;
+
+ROUND(AVG(totales.monto_total), 2) AS Promedio_Gasto_Por_Consumo,
+    MAX(totales.monto_total) AS Consumo_Maximo,
+    MIN(totales.monto_total) AS Consumo_Minimo
+FROM (
+    SELECT 
+        c.id_consumo,
+        SUM(dc.cantidad * dc.precio_unitario_historico) AS monto_total
+    FROM consumo c
+    INNER JOIN detalle_consumo dc ON c.id_consumo = dc.id_consumo
+    GROUP BY c.id_consumo
+) AS totales;
