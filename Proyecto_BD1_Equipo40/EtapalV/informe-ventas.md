@@ -1,6 +1,6 @@
 --Reporte agregado por producto 
 
-DECLARE @FechaDesde DATE = '2026-09-01';
+DECLARE @FechaDesde DATE = '2026-09-01'; 
 DECLARE @FechaHasta DATE = '2026-10-31';
 
 SELECT 
