@@ -29,3 +29,71 @@ Otorgar privilegios de administración global al personal técnico o de infraest
 Restringir al personal de recepción para que registre reservas y pasajeros mediante procedimientos seguros, sin permitirles modificar el esquema de tablas o precios arbitrariamente.
 
 Habilitar roles de solo lectura enfocados en la consulta del estado de las habitaciones o listados de productos para el personal de servicio.
+
+3. Implementación en SQL Server Express
+En esta sección se detalla el script utilizado para configurar la seguridad a nivel de usuarios y roles dentro del motor SQL Server Express, aplicando los comandos de creación de inicios de sesión, usuarios, asignación de roles y permisos específicos mediante
+
+-- ==========================================
+-- 1. PERMISOS A NIVEL DE USUARIOS Y PROCEDIMIENTOS
+-- ==========================================
+
+-- Crear inicios de sesión (Logins) en el servidor
+CREATE LOGIN usuario_admin_hotel WITH PASSWORD = 'Admin123*';
+CREATE LOGIN usuario_recepcion WITH PASSWORD = 'Recepcion123*';
+GO
+
+USE HotelDB;
+GO
+
+-- Crear usuarios de base de datos asociados
+CREATE USER usuario_admin_hotel FOR LOGIN usuario_admin_hotel;
+CREATE USER usuario_recepcion FOR LOGIN usuario_recepcion;
+GO
+
+-- Asignar privilegios completos al administrador
+ALTER ROLE db_owner ADD MEMBER usuario_admin_hotel;
+GO
+
+-- Otorgar permisos limitados de lectura y ejecución específica al recepcionista
+GRANT SELECT ON dbo.cliente TO usuario_recepcion;
+GRANT EXECUTE ON dbo.sp_RegistrarPago TO usuario_recepcion;
+GO
+
+
+-- ==========================================
+-- 2. PERMISOS A NIVEL DE ROLES PERSONALIZADOS
+-- ==========================================
+
+-- Crear logins para la demostración de roles
+CREATE LOGIN usuario_con_rol WITH PASSWORD = 'Rol123*';
+CREATE LOGIN usuario_sin_rol WITH PASSWORD = 'Rol456*';
+GO
+
+USE HotelDB;
+GO
+
+CREATE USER usuario_con_rol FOR LOGIN usuario_con_rol;
+CREATE USER usuario_sin_rol FOR LOGIN usuario_sin_rol;
+GO
+
+-- Crear un rol personalizado para la consulta de habitaciones
+CREATE ROLE rol_consulta_habitaciones;
+GO
+
+-- Otorgar permisos sobre la tabla al rol creado
+GRANT SELECT ON dbo.habitacion TO rol_consulta_habitaciones;
+GO
+
+-- Incorporar al usuario autorizado dentro del rol
+ALTER ROLE rol_consulta_habitaciones ADD MEMBER usuario_con_rol;
+GO
+
+3. Implementación en SQL Server Express
+En esta sección se detalla el script utilizado para configurar la seguridad a nivel de usuarios y roles dentro del motor SQL Server Express, aplicando los comandos de creación de inicios de sesión, usuarios, asignación de roles y permisos específicos mediante
+
+4. Caso concreto aplicado al sistema de ventas del equipo
+En el sistema de gestión hotelera (HotelDB), la seguridad se implementa para segregar las responsabilidades operativas y financieras entre los distintos perfiles de usuarios:
+Personal de Recepción (usuario_recepcion / usuario_con_rol): Necesita consultar la disponibilidad de las instalaciones (habitacion, cliente) y registrar transacciones cotidianas. Mediante la asignación de roles específicos (rol_consulta_habitaciones) y el uso de procedimientos almacenados (como sp_RegistrarPago), el recepcionista puede operar el sistema de manera eficiente pero sin tener privilegios de modificación directa sobre las tablas estructurales o financieras de la base de datos.
+Personal Administrador (usuario_admin_hotel): Posee control total sobre el motor de base de datos (rol db_owner) para realizar tareas de mantenimiento, gestión de esquemas, auditorías y control global del sistema de reservas y pagos.
+Principio de aplicación: Esto evita que un usuario sin los permisos adecuados altere precios, elimine registros críticos de pagos o corrompa la integridad de la información del hotel.
+
