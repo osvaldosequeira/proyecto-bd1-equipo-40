@@ -1,4 +1,4 @@
-investigaciones.md
+investigacion.md
 
 **Definición y objetivo:**
 Los procedimientos almacenados (Stored Procedures) son programas SQL que se guardan dentro de la base de datos y pueden ejecutar múltiples operaciones. 
