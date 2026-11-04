@@ -11,3 +11,8 @@ Medios de Pago: Flexibilidad para registrar diferentes medios de pago y soporte 
 Seguridad y Roles: Implementación de esquemas de seguridad avanzados y roles personalizados (como rol_consulta_habitaciones) para restringir y asegurar el acceso a los datos.
 
 Además, se contemplan los distintos medios de pago y la posibilidad de realizar pagos parciales, tanto para las reservas como para los consumos. El diseño de la base de datos se desarrolla a partir de las reglas de negocio y restricciones propias del funcionamiento de un hotel, buscando lograr  una estructura de datos organizada, consistente y normalizada que permita reducir redundancias y mantener la integridad de la información.
+
+##  Diseño e Integridad de Datos
+El modelo se construyó considerando rigurosamente las reglas de negocio y restricciones del dominio hotelero. Su arquitectura garantiza:
+* **Normalización:** Estructura optimizada para reducir la redundancia de datos.
+* **Consistencia e Integridad:** Aplicación de claves primarias, foráneas y restricciones lógicas que aseguran la validez de la información almacenada.
