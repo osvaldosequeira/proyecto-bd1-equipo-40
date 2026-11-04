@@ -1,64 +1,66 @@
 -- ===================================================================
 -- TEMA TÉCNICO: OPTIMIZACIÓN DE CONSULTAS
--- Caso: Reporte de facturación diaria en SUPER-EXPRESS
+-- Caso: Búsqueda intensiva de reservas por rango de fechas de entrada
 -- ===================================================================
 
--- Activamos las estadísticas de tiempo y lecturas para medir el rendimiento
+-- Activamos las estadísticas para medir la mejora de rendimiento
 SET STATISTICS IO ON;
 SET STATISTICS TIME ON;
 GO
 
 -- ===================================================================
--- PASO 1: CONSULTA SIN OPTIMIZAR (Simulando el cuello de botella)
--- Al no tener índice en fecha_hora, SQL Server hace un "Table Scan".
+-- PASO 1: CONSULTA SIN OPTIMIZAR
+-- Sin índice en fecha_entrada, SQL Server lee toda la tabla de reservas.
 -- ===================================================================
 PRINT '--- EJECUCIÓN SIN OPTIMIZAR ---';
 
 SELECT 
-    c.id_compra,
-    c.fecha_hora,
-    c.costo,
-    p.nombre,
-    p.apellido
-FROM COMPRA c
-INNER JOIN CLIENTE cli ON c.cod_cliente = cli.cod_cliente
-INNER JOIN PERSONA p ON cli.id_persona = p.id_persona
-WHERE c.fecha_hora >= '2026-10-01 00:00:00' 
-  AND c.fecha_hora <= '2026-10-31 23:59:59';
+    r.id_reserva,
+    r.fecha_entrada,
+    r.fecha_salida,
+    c.nombre,
+    c.apellido,
+    h.codigo_habitacion
+FROM reserva r
+INNER JOIN cliente c ON r.id_cliente = c.id_cliente
+INNER JOIN habitacion h ON r.id_habitacion = h.id_habitacion
+WHERE r.fecha_entrada >= '2026-09-01' 
+  AND r.fecha_entrada <= '2026-10-31';
 GO
 
 -- ===================================================================
--- PASO 2: IMPLEMENTACIÓN DE LA OPTIMIZACIÓN (Creación del Índice)
--- Creamos un índice No Agrupado para acelerar la búsqueda por fechas
+-- PASO 2: IMPLEMENTACIÓN DE LA OPTIMIZACIÓN
+-- Creamos un índice "cubierto" para que el motor no tenga que ir a 
+-- buscar los otros campos a la tabla original (Key Lookup).
 -- ===================================================================
 PRINT '--- CREANDO ÍNDICE DE OPTIMIZACIÓN ---';
 
-CREATE NONCLUSTERED INDEX IX_Compra_FechaHora 
-ON COMPRA (fecha_hora)
-INCLUDE (costo, cod_cliente); -- Hacemos el índice "cubierto" para evitar lecturas extra
+CREATE NONCLUSTERED INDEX IX_Reserva_FechaEntrada 
+ON reserva (fecha_entrada)
+INCLUDE (fecha_salida, id_cliente, id_habitacion);
 GO
 
 -- ===================================================================
--- PASO 3: CONSULTA OPTIMIZADA (Verificando la mejora)
--- Ahora el motor usará un "Index Seek" directamente en el árbol B.
+-- PASO 3: CONSULTA OPTIMIZADA
+-- El motor ahora usará un "Index Seek" directamente en el árbol B.
 -- ===================================================================
 PRINT '--- EJECUCIÓN OPTIMIZADA ---';
 
--- Ejecutamos exactamente la misma consulta para comparar el rendimiento
 SELECT 
-    c.id_compra,
-    c.fecha_hora,
-    c.costo,
-    p.nombre,
-    p.apellido
-FROM COMPRA c
-INNER JOIN CLIENTE cli ON c.cod_cliente = cli.cod_cliente
-INNER JOIN PERSONA p ON cli.id_persona = p.id_persona
-WHERE c.fecha_hora >= '2026-10-01 00:00:00' 
-  AND c.fecha_hora <= '2026-10-31 23:59:59';
+    r.id_reserva,
+    r.fecha_entrada,
+    r.fecha_salida,
+    c.nombre,
+    c.apellido,
+    h.codigo_habitacion
+FROM reserva r
+INNER JOIN cliente c ON r.id_cliente = c.id_cliente
+INNER JOIN habitacion h ON r.id_habitacion = h.id_habitacion
+WHERE r.fecha_entrada >= '2026-09-01' 
+  AND r.fecha_entrada <= '2026-10-31';
 GO
 
--- Desactivamos las métricas
+-- Apagamos las métricas
 SET STATISTICS IO OFF;
 SET STATISTICS TIME OFF;
 GO
