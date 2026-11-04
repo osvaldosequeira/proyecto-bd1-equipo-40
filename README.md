@@ -16,3 +16,8 @@ Además, se contemplan los distintos medios de pago y la posibilidad de realizar
 El modelo se construyó considerando rigurosamente las reglas de negocio y restricciones del dominio hotelero. Su arquitectura garantiza:
 * **Normalización:** Estructura optimizada para reducir la redundancia de datos.
 * **Consistencia e Integridad:** Aplicación de claves primarias, foráneas y restricciones lógicas que aseguran la validez de la información almacenada.
+
+##  Entorno de Desarrollo y Requisitos 
+* *SGBD:* Microsoft SQL Server (SQL Server Express )
+* *Herramientas de Gestión:* SQL Server Management Studio (SSMS) 
+* *Control de Versiones:* Git / GitHub
