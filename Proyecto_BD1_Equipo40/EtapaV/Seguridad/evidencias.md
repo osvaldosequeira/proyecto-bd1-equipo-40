@@ -1,25 +1,22 @@
-# Investigación Teórica - Modelo de Seguridad en SQL Server
+### 3. En el archivo `evidencias.md`
 
-## 1. Definición y Objetivo
+```markdown
+# Caso Concreto Aplicado al Sistema del Equipo y Evidencias
 
-### Definición:
-La seguridad en SQL Server comprende el conjunto de mecanismos de autenticación y autorización orientados a proteger el motor de base de datos. Se estructura mediante:
+En el sistema de gestión hotelera (`HotelDB`), la seguridad se implementa para segregar las responsabilidades operativas y financieras entre los distintos perfiles de usuarios:
 
-* **Inicios de sesión (Logins):** Credenciales a nivel de instancia que validan el acceso al servidor.
-* **Usuarios de base de datos (Users) y Roles:** Objetos internos que permiten conceder o restringir permisos específicos sobre los componentes de la base de datos del hotel.
+* **Personal de Recepción (`usuario_recepcion` / `usuario_con_rol`):** Necesita consultar la disponibilidad de las instalaciones (`habitacion`, `cliente`) y registrar transacciones cotidianas. Mediante la asignación de roles específicos (`rol_consulta_habitaciones`) y el uso de procedimientos almacenados (como `sp_RegistrarPago`), el recepcionista puede operar el sistema de manera eficiente pero sin tener privilegios de modificación directa sobre las tablas estructurales o financieras de la base de datos.
+* **Personal Administrador (`usuario_admin_hotel`):** Posee control total sobre el motor de base de datos (rol `db_owner`) para realizar tareas de mantenimiento, gestión de esquemas, auditorías y control global del sistema de reservas y pagos.
 
-### Objetivo:
-Garantizar la confidencialidad, disponibilidad e integridad de los datos de los huéspedes, reservas y operaciones del hotel. Su propósito central es aplicar el **principio de mínimo privilegio**, asegurando que cada usuario u operador del sistema posea únicamente los permisos indispensables para su labor, previniendo alteraciones indebidas o accesos no autorizados.
+> **Principio de aplicación:** Esto evita que un usuario sin los permisos adecuados altere precios, elimine registros críticos de pagos o corrompa la integridad de la información del hotel.
 
-## 2. Ventajas y Aplicaciones
+---
+## Pruebas de Verificación y Permisos
 
-### Ventajas:
-* **Protección de información sensible:** Resguarda datos personales de clientes (como DNI, teléfonos) y registros financieros de pagos.
-* **Mitigación de errores operativos:** Previene la ejecución accidental de consultas destructivas (`UPDATE` o `DELETE`) de forma directa sobre tablas críticas como `reserva` o `pago`.
-* **Encapsulamiento de la lógica de negocio:** Restringe el acceso transaccional directo a las tablas, obligando a los usuarios a operar mediante procedimientos almacenados validados.
-* **Administración escalable:** Facilita la gestión de permisos al agrupar usuarios en roles funcionales (ej. recepcionistas, auditores, personal de sistemas).
+### Prueba 1: Inserción y consulta permitida por rol de Recepción
+Se verifica que el usuario `usuario_recepcion` puede consultar y registrar datos operativos correctamente:
 
-### Aplicaciones en el Sistema de Hotel:
-* Otorgar privilegios de administración global al personal técnico o de infraestructura.
-* Restringir al personal de recepción para que registre reservas y pasajeros mediante procedimientos seguros, sin permitirles modificar el esquema de tablas o precios arbitrariamente.
-* Habilitar roles de solo lectura enfocados en la consulta del estado de las habitaciones o listados de productos para el personal de servicio.
+![Ejecución Correcta con Permisos]
+
+### Prueba 2: Bloqueo de acción no autorizada (Denegación de permisos)
+Se intenta modificar la estructura o eliminar registros sin privilegios desde la cuenta del recepcionista, generando la denegación explícita por el motor de SQL Server:
