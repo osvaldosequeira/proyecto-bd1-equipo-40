@@ -18,6 +18,6 @@ El modelo se construyó considerando rigurosamente las reglas de negocio y restr
 * **Consistencia e Integridad:** Aplicación de claves primarias, foráneas y restricciones lógicas que aseguran la validez de la información almacenada.
 
 ##  Entorno de Desarrollo y Requisitos 
-* *SGBD:* Microsoft SQL Server (SQL Server Express )
+* *SGBD:* Microsoft SQL Server (SQL Server Express)
 * *Herramientas de Gestión:* SQL Server Management Studio (SSMS) 
 * *Control de Versiones:* Git / GitHub
