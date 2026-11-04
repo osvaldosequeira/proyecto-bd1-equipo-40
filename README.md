@@ -4,6 +4,7 @@ Sistema Gestor de Reservas, Estadías y Consumos de un Hotel
 El presente proyecto consiste en el diseño de una base de datos diseñada para gestionar las principales operaciones de un hotel con restaurante integrado. El sistema permite organizar y administrar la información relacionada con los hoteles, habitaciones, categorias de habitación, clientes, reservas, consumos del restaurante, productos, pagos y servicios de mantenimiento.
 
 Características Principales
+
 Gestión de Reservas y Estadías: Control integral del ciclo de vida del hospedaje de los clientes.
 Control de Stock y Restaurante: Administración de productos del restaurante, registro de consumos y preservación histórica de precios aplicados en el momento de la transacción.
 Medios de Pago: Flexibilidad para registrar diferentes medios de pago y soporte para pagos parciales de reservas y consumos.
