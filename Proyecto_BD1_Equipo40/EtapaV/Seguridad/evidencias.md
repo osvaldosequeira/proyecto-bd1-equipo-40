@@ -16,7 +16,12 @@ En el sistema de gestión hotelera (`HotelDB`), la seguridad se implementa para 
 ### Prueba 1: Inserción y consulta permitida por rol de Recepción
 Se verifica que el usuario `usuario_recepcion` puede consultar y registrar datos operativos correctamente:
 
-![Ejecución Correcta con Permisos]
+Ejecución Correcta con Permisos
 
 ### Prueba 2: Bloqueo de acción no autorizada (Denegación de permisos)
 Se intenta modificar la estructura o eliminar registros sin privilegios desde la cuenta del recepcionista, generando la denegación explícita por el motor de SQL Server:
+
+<img width="1654" height="2338" alt="evidencianro2" src="https://github.com/user-attachments/assets/a9970591-5ae7-40c3-800f-d6a5b327c564" />
+<img width="1654" height="2338" alt="evidencianro1" src="https://github.com/user-attachments/assets/d3761760-8f91-4555-8825-13109d88ff80" />
+
+
